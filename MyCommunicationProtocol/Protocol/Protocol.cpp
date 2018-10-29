@@ -13,7 +13,7 @@ void Protocol::Run() {
     Protocol::Open();
 
     auto inputHelper = new InputHelper();
-    char* input;
+    char input[10];
 
 
     while(true) {
