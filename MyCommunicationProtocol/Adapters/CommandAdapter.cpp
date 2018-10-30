@@ -5,10 +5,12 @@
 #include "../Commands/LoginCommand.cpp"
 #include "../Commands/MyStatCommand.cpp"
 #include "../Commands/MyFindCommand.cpp"
+#include "../Commands/QuitCommand.cpp"
 
 #define LOGIN "login"
 #define MYSTAT "mystat"
 #define MYFIND "myfind"
+#define QUIT "quit"
 
 Command* CommandAdapter::GetInternalCommand(const char* command) {
     if(strcmp(command, LOGIN) == 0) {
@@ -23,5 +25,9 @@ Command* CommandAdapter::GetInternalCommand(const char* command) {
         return new MyFindCommand();
     }
     
+    if(strcmp(command, QUIT) == 0) {
+        return new QuitCommand();
+    }
+
     return nullptr;
 }

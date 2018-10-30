@@ -1,4 +1,5 @@
 #include "stdio.h"
+#include <sys/wait.h>
 #include <iostream>
 #include <cstring>
 
@@ -29,6 +30,9 @@ void Protocol::Run() {
                 }
             })
             ->OnParent([](pid_t childId) {
+                int status;
+                waitpid(childId, &status, 0);
+
                 if(!Protocol::isOpen) {
                     return;
                 }
@@ -36,10 +40,6 @@ void Protocol::Run() {
                 printf("I am parent\n");
             })
             ->OnChild([protocolInput](pid_t childId) {
-                if(!Protocol::isOpen) {
-                    return;
-                }
-
                 Protocol::HandleInputCommand(
                     protocolInput->GetCommand(), 
                     protocolInput->GetArgs()
@@ -71,6 +71,5 @@ void Protocol::Open() {
 }
 
 void Protocol::Close(){
-    printf("Clsing, bye");
     Protocol::isOpen = false;
 }
