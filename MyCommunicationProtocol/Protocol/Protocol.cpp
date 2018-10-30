@@ -4,7 +4,9 @@
 
 #include "Protocol.h"
 #include "ProtocolInput.h"
+#include "../Fork/Fork.h"
 #include "../Adapters/CommandAdapter.h"
+
 using namespace std;
 
 bool Protocol::isOpen;
@@ -16,19 +18,24 @@ void Protocol::Run() {
 
     while(Protocol::isOpen) {
         cin.getline(input, 255);
-        char copy[255];
 
         auto protocolInput = new ProtocolInput(input);
 
-        if(Protocol::ReceivedQuitCommand(protocolInput->GetCommand())) {
-            Protocol::Close();
-            break;
-        }
+        auto fork = new Fork();
+        fork->OnParent([](pid_t childId) {
+                printf("I am parent");
+            })
+            ->OnChild([protocolInput](pid_t childId) {
+                if(Protocol::ReceivedQuitCommand(protocolInput->GetCommand())) {
+                    Protocol::Close();
+                }
 
-        Protocol::HandleInputCommand(
-            protocolInput->GetCommand(), 
-            protocolInput->GetArgs()
-        );
+                Protocol::HandleInputCommand(
+                    protocolInput->GetCommand(), 
+                    protocolInput->GetArgs()
+                );
+            })
+            ->Run();
 
     }
 

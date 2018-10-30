@@ -1,18 +1,29 @@
 #pragma once
 
 #include "stdio.h"
-#include "Command.h"
+#include <fstream>
+#include <cstring>
 
-#define CREDENTIALS_STORE "credentials.txt"
+#include "Command.h"
+#include "../Settings/Settings.h"
+
+using namespace std;
 
 class LoginCommand : public Command {
+    private:
+    
+    void OpenSession() {
+        ofstream sessionFile(Settings::sessionPath);
+        sessionFile.close();
+    }
+
     public:
 
     void Execute(const char* commandArguments) {
         FILE * credentialsFile;
         char credentials [100];
 
-        credentialsFile  = fopen (CREDENTIALS_STORE, "r");
+        credentialsFile  = fopen (Settings::credentialsStore, "r");
         if (credentialsFile == NULL) {
             printf("Could not open credentials store!\n");
             return;
@@ -21,6 +32,9 @@ class LoginCommand : public Command {
         fgets(credentials , 100 , credentialsFile);
         fclose (credentialsFile);
 
-        printf("My credentials are %s, I entered %s", credentials, commandArguments);
+        if(strcmp(credentials, commandArguments) == 0) {
+            this->OpenSession();
+        }
+
     }
 };
