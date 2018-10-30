@@ -29,19 +29,23 @@ void Protocol::Run() {
                 }
             })
             ->OnParent([](pid_t childId) {
+                if(!Protocol::isOpen) {
+                    return;
+                }
+
                 printf("I am parent\n");
             })
             ->OnChild([protocolInput](pid_t childId) {
+                if(!Protocol::isOpen) {
+                    return;
+                }
+
                 Protocol::HandleInputCommand(
                     protocolInput->GetCommand(), 
                     protocolInput->GetArgs()
                 );
             })
             ->Run();
-        
-        if(!Protocol::isOpen) {
-            break;
-        }
 
     }
 
