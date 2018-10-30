@@ -9,6 +9,12 @@ const char* InputHelper::InputToCommand(char* input) {
 }
 
 const char* InputHelper::InputToArgs(char* input) {
-    std::string stringInput = input;
-    return stringInput.substr(stringInput.find(" ") + 1).c_str(); 
+    auto p = strtok(input, " ");
+    auto args = strtok(NULL, " ");
+
+    if(args == NULL) {
+        return "";
+    }
+
+    return args;
 }

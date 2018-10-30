@@ -6,6 +6,6 @@
 class LoginCommand : public Command {
     public:
         void Execute(const char* commandArguments) {
-            printf("%s", "Just sayin hello from login");
+            printf("%s\n", "Just sayin hello from login");
         }
 };

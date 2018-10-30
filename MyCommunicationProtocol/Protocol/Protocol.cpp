@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include <iostream>
+#include <cstring>
 
 #include "Protocol.h"
 #include "../Adapters/CommandAdapter.h"
@@ -13,11 +14,10 @@ void Protocol::Run() {
     Protocol::Open();
 
     auto inputHelper = new InputHelper();
-    char input[10];
+    char input[100];
 
-
-    while(true) {
-        cin>>input;
+    while(Protocol::isOpen) {
+        cin.getline(input, 100);
 
         auto inputCommand = inputHelper->InputToCommand(input);
         auto inputArgs = inputHelper->InputToArgs(input);
@@ -37,7 +37,7 @@ void Protocol::HandleInputCommand(const char* inputCommand, const char* args) {
     auto command = CommandAdapter::GetInternalCommand(inputCommand);
 
     if (command == nullptr) {
-        printf("%s", "Invalid command!");
+        printf("Invalid command! %s\n", inputCommand);
         return;
     }
 
@@ -45,7 +45,7 @@ void Protocol::HandleInputCommand(const char* inputCommand, const char* args) {
 }
 
 bool Protocol::ReceivedQuitCommand(const char* command) {
-    return command == "quit";
+    return strcmp(command, "quit") == 0;
 }
 
 void Protocol::Open() {
