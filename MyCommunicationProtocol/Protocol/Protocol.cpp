@@ -3,9 +3,8 @@
 #include <cstring>
 
 #include "Protocol.h"
+#include "ProtocolInput.h"
 #include "../Adapters/CommandAdapter.h"
-#include "../Helpers/InputHelper.h"
-
 using namespace std;
 
 bool Protocol::isOpen;
@@ -13,21 +12,23 @@ bool Protocol::isOpen;
 void Protocol::Run() {
     Protocol::Open();
 
-    auto inputHelper = new InputHelper();
     char input[100];
 
     while(Protocol::isOpen) {
-        cin.getline(input, 100);
+        cin.getline(input, 255);
+        char copy[255];
 
-        auto inputCommand = inputHelper->InputToCommand(input);
-        auto inputArgs = inputHelper->InputToArgs(input);
+        auto protocolInput = new ProtocolInput(input);
 
-        if(Protocol::ReceivedQuitCommand(inputCommand)) {
+        if(Protocol::ReceivedQuitCommand(protocolInput->GetCommand())) {
             Protocol::Close();
             break;
         }
 
-        Protocol::HandleInputCommand(inputCommand, inputArgs);
+        Protocol::HandleInputCommand(
+            protocolInput->GetCommand(), 
+            protocolInput->GetArgs()
+        );
 
     }
 
