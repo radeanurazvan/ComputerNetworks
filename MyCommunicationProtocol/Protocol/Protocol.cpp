@@ -22,20 +22,26 @@ void Protocol::Run() {
         auto protocolInput = new ProtocolInput(input);
 
         auto fork = new Fork();
-        fork->OnParent([](pid_t childId) {
-                printf("I am parent");
-            })
-            ->OnChild([protocolInput](pid_t childId) {
+        fork
+            ->BeforeBoth([protocolInput](pid_t childId) {
                 if(Protocol::ReceivedQuitCommand(protocolInput->GetCommand())) {
                     Protocol::Close();
                 }
-
+            })
+            ->OnParent([](pid_t childId) {
+                printf("I am parent\n");
+            })
+            ->OnChild([protocolInput](pid_t childId) {
                 Protocol::HandleInputCommand(
                     protocolInput->GetCommand(), 
                     protocolInput->GetArgs()
                 );
             })
             ->Run();
+        
+        if(!Protocol::isOpen) {
+            break;
+        }
 
     }
 
@@ -61,5 +67,6 @@ void Protocol::Open() {
 }
 
 void Protocol::Close(){
+    printf("Clsing, bye");
     Protocol::isOpen = false;
 }
