@@ -7,6 +7,7 @@ g++ -g                              \
     Communication/*                 \
     Fork/*                          \
     File/*                          \
+    Guards/*                        \
     Protocol/*                      \
     Entry.cpp
 

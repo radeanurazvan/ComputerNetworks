@@ -14,6 +14,8 @@
 #include "../Communication/Fifo.cpp"
 #include "../Communication/SocketPair.cpp"
 
+#include "../Guards/AuthGuard.h"
+
 using namespace std;
 
 bool Protocol::isOpen;
@@ -87,6 +89,17 @@ void Protocol::ForkAndPlay(ProtocolInput* protocolInput, CommunicationChannel* c
                 cout<<"Parent received "<<output->Decode()<<endl;
             })
             ->OnChild([channel, protocolInput](pid_t childId) {
+
+                auto canExecute = Protocol::CanExecuteCommand(protocolInput->GetCommand());
+                
+                if(!canExecute) {
+                    char errorMessage[] = "Cannot execute. Check your login status\n"; 
+                    channel->Write(errorMessage, strlen(errorMessage));
+
+                    exit(0);
+                    return;
+                } 
+
                 channel->CloseReadDescriptors();
 
                 Protocol::HandleInputCommand(
@@ -101,4 +114,22 @@ void Protocol::ForkAndPlay(ProtocolInput* protocolInput, CommunicationChannel* c
             })
             ->Run();
 
+}
+
+bool Protocol::CanExecuteCommand(const char*  command){
+    if(strcmp(command, "quit") == 0) {
+        return true;
+    }
+
+    auto isAuthenticated = AuthGuard().IsAuthenticated();
+
+    if(strcmp(command, "login") == 0) {
+        if(isAuthenticated) {
+            return false;
+        }
+
+        return true;
+    }
+
+    return isAuthenticated;
 }
