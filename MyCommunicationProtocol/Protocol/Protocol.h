@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ProtocolInput.h"
 #include "../Communication/CommunicationChannel.h"
 
 class Protocol {
@@ -11,6 +12,7 @@ class Protocol {
         static void Close();
         static bool ReceivedQuitCommand(const char* command);
         static void HandleInputCommand(const char* command, const char* args, CommunicationChannel* channel);
+        static void ForkAndPlay(ProtocolInput* input, CommunicationChannel* channel);
 
     public:
         static void Run();

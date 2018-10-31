@@ -2,6 +2,7 @@
 #include <sys/wait.h>
 #include <iostream>
 #include <cstring>
+#include <vector>
 
 #include "Protocol.h"
 #include "ProtocolInput.h"
@@ -11,6 +12,7 @@
 
 #include "../Communication/Pipe.cpp"
 #include "../Communication/Fifo.cpp"
+#include "../Communication/SocketPair.cpp"
 
 using namespace std;
 
@@ -26,8 +28,40 @@ void Protocol::Run() {
 
         auto protocolInput = new ProtocolInput(input);
 
-        auto channel = new Fifo();
-        auto fork = new Fork();
+        CommunicationChannel* channels[3] =  { new Pipe(), new Fifo(), new SocketPair() };
+        for(auto channel : channels) {
+            Protocol::ForkAndPlay(protocolInput, channel);
+        }
+        
+    }
+
+}
+
+void Protocol::HandleInputCommand(const char* inputCommand, const char* args, CommunicationChannel* channel) {
+    auto command = CommandAdapter::GetInternalCommand(inputCommand);
+
+    if (command == nullptr) {
+        printf("Invalid command! %s\n", inputCommand);
+        return;
+    }
+
+    command->Execute(args, channel);
+}
+
+bool Protocol::ReceivedQuitCommand(const char* command) {
+    return strcmp(command, "quit") == 0;
+}
+
+void Protocol::Open() {
+    Protocol::isOpen = true;
+}
+
+void Protocol::Close(){
+    Protocol::isOpen = false;
+}
+
+void Protocol::ForkAndPlay(ProtocolInput* protocolInput, CommunicationChannel* channel) {
+    auto fork = new Fork();
         fork
             ->BeforeBoth([protocolInput](pid_t childId) {
                 if(Protocol::ReceivedQuitCommand(protocolInput->GetCommand())) {
@@ -67,29 +101,4 @@ void Protocol::Run() {
             })
             ->Run();
 
-    }
-
-}
-
-void Protocol::HandleInputCommand(const char* inputCommand, const char* args, CommunicationChannel* channel) {
-    auto command = CommandAdapter::GetInternalCommand(inputCommand);
-
-    if (command == nullptr) {
-        printf("Invalid command! %s\n", inputCommand);
-        return;
-    }
-
-    command->Execute(args, channel);
-}
-
-bool Protocol::ReceivedQuitCommand(const char* command) {
-    return strcmp(command, "quit") == 0;
-}
-
-void Protocol::Open() {
-    Protocol::isOpen = true;
-}
-
-void Protocol::Close(){
-    Protocol::isOpen = false;
 }
