@@ -7,6 +7,7 @@
 #include "Command.h"
 #include "../Settings/Settings.h"
 #include "../Communication/CommunicationChannel.h"
+#include "../Protocol/ProtocolMessage.h"
 
 using namespace std;
 
@@ -26,7 +27,8 @@ class LoginCommand : public Command {
 
         credentialsFile  = fopen (Settings::credentialsStore, "r");
         if (credentialsFile == NULL) {
-            printf("Could not open credentials store!\n");
+            auto protocolMessage = new ProtocolMessage("Could not open credentials store!\n");
+            channel->Write(protocolMessage->GetMessage().c_str(), protocolMessage->GetMessage().length());
             return;
         }
         
@@ -34,12 +36,15 @@ class LoginCommand : public Command {
         fclose (credentialsFile);
 
         if(strcmp(credentials, commandArguments) != 0) {
-            channel->Write("Fail", 5);
+            auto protocolMessage = new ProtocolMessage("Fail");
+
+            channel->Write(protocolMessage->GetMessage().c_str(), protocolMessage->GetMessage().length());
             return;
         }
 
         this->OpenSession();
-        channel->Write("Success", 8);
+        auto protocolMessage = new ProtocolMessage("Success");
+        channel->Write(protocolMessage->GetMessage().c_str(), protocolMessage->GetMessage().length());
 
     }
 };
