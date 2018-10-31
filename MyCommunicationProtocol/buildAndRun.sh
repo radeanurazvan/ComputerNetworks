@@ -4,6 +4,7 @@ g++ -g                              \
     -o MyCommunicationProtocol.exe  \
     Adapters/*                      \
     Commands/*                      \
+    Communication/*                 \
     Fork/*                          \
     File/*                          \
     Protocol/*                      \
