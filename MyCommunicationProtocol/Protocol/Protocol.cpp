@@ -7,6 +7,7 @@
 #include "Protocol.h"
 #include "ProtocolInput.h"
 #include "ProtocolOutput.h"
+#include "ProtocolMessage.h"
 #include "../Fork/Fork.h"
 #include "../Adapters/CommandAdapter.h"
 
@@ -42,7 +43,8 @@ void Protocol::HandleInputCommand(const char* inputCommand, const char* args, Co
     auto command = CommandAdapter::GetInternalCommand(inputCommand);
 
     if (command == nullptr) {
-        printf("Invalid command! %s\n", inputCommand);
+        auto protocolMessage = new ProtocolMessage("Invalid command!");
+        channel->Write(protocolMessage->GetMessage().c_str(), protocolMessage->GetMessage().length());
         return;
     }
 

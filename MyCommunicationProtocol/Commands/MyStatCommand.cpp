@@ -48,7 +48,8 @@ class MyStatCommand : public Command {
         fileUnderStat = fopen(args,"rb");
 
         if(fileUnderStat == NULL) {
-            cout<<"Invalid file!\n";
+            auto protocolMessage = new ProtocolMessage("Invalid file!");
+            channel->Write(protocolMessage->GetMessage().c_str(), protocolMessage->GetMessage().length());
             return;
         }
 
