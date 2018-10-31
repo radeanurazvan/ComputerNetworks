@@ -5,8 +5,11 @@
 
 #include "Protocol.h"
 #include "ProtocolInput.h"
+#include "ProtocolOutput.h"
 #include "../Fork/Fork.h"
 #include "../Adapters/CommandAdapter.h"
+
+#include "../Communication/Pipe.cpp"
 
 using namespace std;
 
@@ -22,6 +25,7 @@ void Protocol::Run() {
 
         auto protocolInput = new ProtocolInput(input);
 
+        auto channel = new Pipe();
         auto fork = new Fork();
         fork
             ->BeforeBoth([protocolInput](pid_t childId) {
@@ -29,21 +33,36 @@ void Protocol::Run() {
                     Protocol::Close();
                 }
             })
-            ->OnParent([](pid_t childId) {
+            ->OnParent([channel](pid_t childId) {
+                channel->CloseWriteDescriptors();                
+
                 int status;
                 waitpid(childId, &status, 0);
 
                 if(!Protocol::isOpen) {
                     return;
                 }
+                
+                char result[255];
+                channel->Read(result);
+                channel->CloseReadDescriptors();
 
-                printf("I am parent\n");
+                auto output = new ProtocolOutput(result);
+
+                cout<<"Parent received "<<output->Decode()<<endl;
             })
-            ->OnChild([protocolInput](pid_t childId) {
+            ->OnChild([channel, protocolInput](pid_t childId) {
+                channel->CloseReadDescriptors();
+
                 Protocol::HandleInputCommand(
                     protocolInput->GetCommand(), 
-                    protocolInput->GetArgs()
+                    protocolInput->GetArgs(),
+                    channel
                 );
+
+                channel->CloseWriteDescriptors();
+
+                exit(0);
             })
             ->Run();
 
@@ -51,7 +70,7 @@ void Protocol::Run() {
 
 }
 
-void Protocol::HandleInputCommand(const char* inputCommand, const char* args) {
+void Protocol::HandleInputCommand(const char* inputCommand, const char* args, CommunicationChannel* channel) {
     auto command = CommandAdapter::GetInternalCommand(inputCommand);
 
     if (command == nullptr) {
@@ -59,7 +78,7 @@ void Protocol::HandleInputCommand(const char* inputCommand, const char* args) {
         return;
     }
 
-    command->Execute(args);
+    command->Execute(args, channel);
 }
 
 bool Protocol::ReceivedQuitCommand(const char* command) {

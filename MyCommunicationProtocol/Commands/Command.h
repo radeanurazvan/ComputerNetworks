@@ -1,6 +1,8 @@
 #pragma once
 
+#include "../Communication/CommunicationChannel.h"
+
 class Command {
     public:
-        virtual void Execute(const char* commandArguments) = 0;
+        virtual void Execute(const char* commandArguments, CommunicationChannel* channel) = 0;
 };

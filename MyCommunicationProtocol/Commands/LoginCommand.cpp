@@ -6,6 +6,7 @@
 
 #include "Command.h"
 #include "../Settings/Settings.h"
+#include "../Communication/CommunicationChannel.h"
 
 using namespace std;
 
@@ -19,7 +20,7 @@ class LoginCommand : public Command {
 
     public:
 
-    void Execute(const char* commandArguments) {
+    void Execute(const char* commandArguments, CommunicationChannel* channel) {
         FILE * credentialsFile;
         char credentials [100];
 
@@ -32,9 +33,13 @@ class LoginCommand : public Command {
         fgets(credentials , 100 , credentialsFile);
         fclose (credentialsFile);
 
-        if(strcmp(credentials, commandArguments) == 0) {
-            this->OpenSession();
+        if(strcmp(credentials, commandArguments) != 0) {
+            channel->Write("Fail", 5);
+            return;
         }
+
+        this->OpenSession();
+        channel->Write("Success", 8);
 
     }
 };

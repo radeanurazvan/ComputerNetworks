@@ -4,12 +4,11 @@
 
 #include "../Settings/Settings.h"
 #include "Command.h"
-
+#include "../Communication/CommunicationChannel.h"
 class QuitCommand : public Command {
     public:
 
-    void Execute(const char* args) {
-        printf("removing %d", remove(Settings::sessionFile));
+    void Execute(const char* args, CommunicationChannel* channel) {
         remove(Settings::sessionFile);
     }
 };

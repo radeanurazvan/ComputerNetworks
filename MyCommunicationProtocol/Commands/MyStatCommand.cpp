@@ -10,6 +10,8 @@
 #include <time.h>
 
 #include "../File/FileMetadata.h"
+#include "../Communication/CommunicationChannel.h"
+#include "../Protocol/ProtocolMessage.h"
 
 using namespace std;
 
@@ -42,7 +44,7 @@ class MyStatCommand : public Command {
 
     public:
     
-    void Execute(const char* args) {
+    void Execute(const char* args, CommunicationChannel* channel) {
         fileUnderStat = fopen(args,"rb");
 
         if(fileUnderStat == NULL) {
@@ -59,6 +61,7 @@ class MyStatCommand : public Command {
 
         fclose(fileUnderStat);
 
-        cout<<metadata->ToInline();
+        auto protocolMessage = new ProtocolMessage(metadata->ToInline().c_str());
+        channel->Write(protocolMessage->GetMessage().c_str(), protocolMessage->GetMessage().length() + 1);
     }
 };

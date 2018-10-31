@@ -7,32 +7,25 @@ class Pipe : public CommunicationChannel {
     private:
     int channel[2];
 
-    void CloseReadDescriptors() {
-        close(channel[0]);
-    }
-
-    void CloseWriteDescriptors() {
-        close(channel[1]);
-    }
-
     public:
         Pipe() {
             if(pipe(channel) == -1){
                 printf("Pipe failed!\n");
             }
         }
-        char* Read() {
-            CloseWriteDescriptors();
-
-            char tmpString[255];
-            read(channel[0], tmpString, 255);
-
-            return tmpString;
+        void Read(char* readTarget, int readLimit = 255) {
+            read(channel[0], readTarget, readLimit);
         }
 
-        void Write(char* subject, int bitsLength) {
-            CloseReadDescriptors();
-
+        void Write(const char* subject, int bitsLength) {
             write(channel[1], subject, bitsLength);
+        }
+
+        void CloseReadDescriptors() {
+            close(channel[0]);
+        }
+
+        void CloseWriteDescriptors() {
+            close(channel[1]);
         }
 };
