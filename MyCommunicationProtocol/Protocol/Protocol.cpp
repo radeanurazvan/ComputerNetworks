@@ -10,6 +10,7 @@
 #include "../Adapters/CommandAdapter.h"
 
 #include "../Communication/Pipe.cpp"
+#include "../Communication/Fifo.cpp"
 
 using namespace std;
 
@@ -25,7 +26,7 @@ void Protocol::Run() {
 
         auto protocolInput = new ProtocolInput(input);
 
-        auto channel = new Pipe();
+        auto channel = new Fifo();
         auto fork = new Fork();
         fork
             ->BeforeBoth([protocolInput](pid_t childId) {
