@@ -34,7 +34,6 @@ void Protocol::Run() {
         for(auto channel : channels) {
             Protocol::ForkAndPlay(protocolInput, channel);
         }
-        
     }
 
 }
@@ -71,6 +70,7 @@ void Protocol::ForkAndPlay(ProtocolInput* protocolInput, CommunicationChannel* c
                 }
             })
             ->OnParent([channel](pid_t childId) {
+                channel->InitRead();
                 channel->CloseWriteDescriptors();                
 
                 int status;
@@ -86,9 +86,11 @@ void Protocol::ForkAndPlay(ProtocolInput* protocolInput, CommunicationChannel* c
 
                 auto output = new ProtocolOutput(result);
 
-                cout<<"Parent received "<<output->Decode()<<endl;
+                cout<<"Parent received from "<<channel->GetName()<<": "<<output->Decode()<<endl;
             })
             ->OnChild([channel, protocolInput](pid_t childId) {
+
+                channel->InitWrite();
 
                 auto canExecute = Protocol::CanExecuteCommand(protocolInput->GetCommand());
                 

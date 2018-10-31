@@ -11,35 +11,44 @@
 class Fifo : public CommunicationChannel {
     private:
         char fifoName[20] = "fifos/fifo";
-        int channel;
+
+        int readEnd;
+        int writeEnd;
 
     public:
         Fifo() {
             auto random = rand() % 11;
             strcat(fifoName, std::to_string(random).c_str());
 
-            mkfifo(fifoName, 0666);
+            mkfifo(fifoName, 0777);
         }
 
         void Read(char* readSubject, int readLimit = 255) {
-            channel = open(fifoName, O_RDONLY); 
-            read(channel, readSubject, readLimit); 
-
-            printf("Read subj %s \n", readSubject);
-
-            close(channel); 
+            auto charsRead = read(readEnd, readSubject, readLimit); 
+            readSubject[charsRead] = NULL;
         }
 
         void Write(const char* subject, int bitsLength) {
-            channel = open(fifoName, O_WRONLY); 
-
-            printf("Writing %s \n", subject);
-
-            write(channel, subject, bitsLength); 
-            close(channel); 
+            write(writeEnd, subject, bitsLength); 
         }
 
-        void CloseReadDescriptors() {}
+        void InitRead() {
+            readEnd = open(fifoName, O_RDONLY);
+        }
 
-        void CloseWriteDescriptors() {}
+        void InitWrite() {
+            writeEnd = open(fifoName, O_WRONLY);
+        }
+
+        void CloseReadDescriptors() {
+            //close(readEnd);
+        }
+
+        void CloseWriteDescriptors() {
+            //close(writeEnd);
+        }
+
+        const char* GetName() {
+            return "Fifo";
+        }
 };

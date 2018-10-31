@@ -14,7 +14,8 @@ class SocketPair : public CommunicationChannel {
         }
 
         void Read(char* subject, int readLimit = 255) {
-            read(channel[1], subject, readLimit);
+            auto charsRead = read(channel[1], subject, readLimit);
+            subject[charsRead] = NULL;
         }
 
         void Write(const char* subject, int bitsLength) {
@@ -27,6 +28,14 @@ class SocketPair : public CommunicationChannel {
 
         void CloseWriteDescriptors() {
             close(channel[1]);
+        }
+
+        void InitRead() {}
+
+        void InitWrite() {}
+
+        const char* GetName() {
+            return "Socket";
         }
 
 };

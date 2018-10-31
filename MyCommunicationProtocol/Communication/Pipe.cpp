@@ -13,8 +13,10 @@ class Pipe : public CommunicationChannel {
                 printf("Pipe failed!\n");
             }
         }
+
         void Read(char* readTarget, int readLimit = 255) {
-            read(channel[0], readTarget, readLimit);
+            auto charsRead = read(channel[0], readTarget, readLimit);
+            readTarget[charsRead] = NULL;
         }
 
         void Write(const char* subject, int bitsLength) {
@@ -28,4 +30,12 @@ class Pipe : public CommunicationChannel {
         void CloseWriteDescriptors() {
             close(channel[1]);
         }
+
+        const char* GetName() {
+            return "Pipe";
+        }
+
+        void InitRead() {}
+
+        void InitWrite() {}
 };
